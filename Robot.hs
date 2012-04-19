@@ -5,6 +5,8 @@ import Matrix
 import Types
 import Debug.Trace
 
+third (_, _, x) = x
+
 --scade o lista mica dintr-o lista mare
 -- listSubstract [2,3,4] [1,2,4,5] = [1,5]
 --listSubstract :: [Int] -> [Int] -> [Int]
