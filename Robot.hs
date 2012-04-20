@@ -5,6 +5,7 @@ import Matrix
 import Types
 import Debug.Trace
 import Data.List
+import Data.Maybe
 
 --scade o lista mica dintr-o lista mare
 -- listSubstract [2,3,4] [1,2,4,5] = [1,5]
@@ -16,6 +17,7 @@ listSubstract smallList bigList = filter (\ x -> notElem x smallList) bigList
 avoidCollision asmCard cs = if (notElem asmCard cs )
 	then 	asmCard
 	else 	(listSubstract cs [S,E,N,W]) !! 0
+	
 --da pozitia la care se va afla robotul dupa ce se va duce in directia Cardinal
 newPosition:: (Int,Int)->Cardinal->(Int,Int)
 newPosition (x, y) card
@@ -36,20 +38,29 @@ makeNeighList (x,y) matr =
 		west = getMatrixElement (newPosition (x,y) W) matr
 
 --ia un index dintr-o lista makeNeighList si il face un cardinal
-toCardinal:: Int->Cardinal
+toCardinal:: Maybe Int->Maybe Cardinal
 toCardinal ind
-	| ind == 0 = N
-	| ind == 1 = S
-	| ind == 2 = E
-	| ind == 3 = W
-	
-takeBestCard neighList s =
-	if( maximum(neighList) > s)
-		then elemIndex (maximum(neighList), neighList)
+	| ind == Just 0 = Just N
+	| ind == Just 1 = Just S
+	| ind == Just 2 = Just E
+	| ind == Just 3 = Just W
+	| otherwise = Nothing
+
+--returneaza cea mai buna alegere a pozitiei la care se va duce robotul
+takeBestCard:: [Int]->Int->Maybe Cardinal	
+takeBestCard neighList s = trace (show (neighList,s))
+	(if( maxNeigh > s) --avem o valoare mai mare decat cea curenta
+		then toCardinal(maxNeighPoz) 
 		else 
-			if(minimum(neighList) /= maximum(neighList))
-			then elemIndex((-1),neighList)
-			else 0
+			if( haveUnexploredPoz)
+			then toCardinal(firstUnexploredPoz)
+			else Just N)
+	where
+		maxNeigh = maximum(neighList)
+		maxNeighPoz = elemIndex (maxNeigh) neighList
+		firstUnexploredPoz = elemIndex (-1) neighList
+		haveUnexploredPoz = (not(isNothing(firstUnexploredPoz)))
+		
 			
 {-
 When the robot enters the mine it receives as input the size of the mine (it
@@ -75,11 +86,13 @@ If the cardinal direction chosen goes to a pit or an wall the robot is
 destroyed. If the new cell contains minerals they are immediately collected.
 -}
 -- perceiveAndAct :: SVal -> [Cardinal] -> a -> (Action, a)
-perceiveAndAct s cs m = trace (show (makeNeighList (x,y) matr){-(setMatrixElement (x,y) matr s)(newPosition (x,y) (avoidCollision E cs))-}) 
-	( (toCardinal(takeBestCard((makeNeighList((x,y),matr)),s))){--(Just (avoidCollision E cs))--},
-	(updatedMatr,(newPosition (x,y) (avoidCollision E cs))))
+perceiveAndAct s cs m = trace (show (updatedMatr,(x,y))) 
+	((takeBestCard (makeNeighList (x,y) updatedMatr) s), 
+	{-(Just (avoidCollision E cs)),-}
+	(updatedMatr,updatedPos))
 	where
 		matr = fst(m)
 		x = fst(snd(m))
 		y = snd(snd(m))
 		updatedMatr = setMatrixElement (x,y) matr s
+		updatedPos = (newPosition (x,y) (fromJust (takeBestCard (makeNeighList (x,y) updatedMatr) s)))
