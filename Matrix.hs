@@ -41,16 +41,16 @@ getCol matrix = snd(fst(matrix))
 getLin matrix = fst(fst(matrix))
 
 --returneaza elementul unei matrice cu n coloane aflat la pozitia i j
-getMatrixElement :: Int -> Int -> Matrix -> Int
-getMatrixElement i j matrix = Data.Sequence.index (snd(matrix)) ((n*i)+j)
+getMatrixElement :: (Int, Int) -> Matrix -> Int
+getMatrixElement (i,j) matrix = Data.Sequence.index (snd(matrix)) ((n*i)+j)
 	where 
 		m = getLin matrix
 		n = getCol matrix
 		
  
 --returneaza o matrice cu elementul la pozitia i j inlocuit cu a
-setMatrixElement ::  Int -> Int ->((Int, Int), Data.Sequence.Seq Int)-> Int -> ((Int, Int), Data.Sequence.Seq Int)
-setMatrixElement i j matrix a = ((m,n), Data.Sequence.update ((n*i)+j) a (snd(matrix)))
+setMatrixElement ::  (Int,Int) ->((Int, Int), Data.Sequence.Seq Int)-> Int -> ((Int, Int), Data.Sequence.Seq Int)
+setMatrixElement (i,j) matrix a = ((m,n), Data.Sequence.update ((n*i)+j) a (snd(matrix)))
 	where
 		m = getLin matrix
 		n = getCol matrix
