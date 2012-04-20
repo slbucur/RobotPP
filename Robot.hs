@@ -49,9 +49,9 @@ destroyed. If the new cell contains minerals they are immediately collected.
 -- perceiveAndAct :: SVal -> [Cardinal] -> a -> (Action, a)
 perceiveAndAct s cs m = trace (show (setMatrixElement x y matr s){-(newPosition (x,y) (avoidCollision E cs))-}) 
 	((Just (avoidCollision E cs)),
-	(matr,(newPosition (x,y) (avoidCollision E cs))))
+	(updatedMatr,(newPosition (x,y) (avoidCollision E cs))))
 	where
 		matr = fst(m)
 		x = fst(snd(m))
 		y = snd(snd(m))
-		--updatedMatr = setMatrixElement x y matr s
+		updatedMatr = setMatrixElement x y matr s
