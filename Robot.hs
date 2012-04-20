@@ -5,8 +5,6 @@ import Matrix
 import Types
 import Debug.Trace
 
-third (_, _, x) = x
-
 --scade o lista mica dintr-o lista mare
 -- listSubstract [2,3,4] [1,2,4,5] = [1,5]
 --listSubstract :: [Int] -> [Int] -> [Int]
@@ -50,7 +48,8 @@ destroyed. If the new cell contains minerals they are immediately collected.
 -}
 -- perceiveAndAct :: SVal -> [Cardinal] -> a -> (Action, a)
 perceiveAndAct s cs m = trace (show (newPosition (x,y) (avoidCollision E cs))) 
-	((Just (avoidCollision E cs)), (matr,(newPosition (x,y) (avoidCollision E cs))))
+	((Just (avoidCollision E cs)),
+	(matr,(newPosition (x,y) (avoidCollision E cs))))
 	where
 		matr = fst(m)
 		x = fst(snd(m))
