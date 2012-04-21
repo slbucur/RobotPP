@@ -106,7 +106,7 @@ takeBestCard (x,y) matr s = trace (show ((x,y),matr))
 			if (maxNeigh > 0)
 			then trace "I'm here" (setCurrentZero, toCardinal(maxNeighPoz))
 			else 
-				((simpleMakePath (x,y) matr), Nothing))
+				trace "bfs" ((simpleMakePath (x,y) matr), Nothing))
 	where
 		neighList = (makeNeighList (x,y) matr)
 		maxNeigh = maximum(neighList)
@@ -164,7 +164,8 @@ makePath pos matr parentMap = if (currentParent == Nothing)
 	
 -- functie simplificata de makePath
 simpleMakePath :: (Int,Int) -> Matrix -> Matrix	
-simpleMakePath pos matr = makePath (fst(bfsRes)) matr (snd(bfsRes))
+simpleMakePath pos matr = trace (show (fst(bfsRes)))
+	(makePath (fst(bfsRes)) matr (snd(bfsRes)))
 	where
 		bfsRes = simpleBfs pos matr
 	
@@ -194,19 +195,20 @@ If the cardinal direction chosen goes to a pit or an wall the robot is
 destroyed. If the new cell contains minerals they are immediately collected.
 -}
 -- perceiveAndAct :: SVal -> [Cardinal] -> a -> (Action, a)
-perceiveAndAct s cs m = trace (show (updatedMatr,(x,y)))
+perceiveAndAct s cs m = trace (show (matr,(x,y)))
 	(	nextCard, 
 	{-(Just (avoidCollision E cs)),-}
-	(updatedMatr,updatedPos))
+	(nextMatr,nextPos))
 	where
 		matr = fst(m)
 		x = fst(snd(m))
 		y = snd(snd(m))
 		--matricea rezultata in urma analizei pozitiei curente
-		nextMatr = (fst (takeBestCard (x,y) matr s))
+		nextMatr = (fst bestCardResult)
 		--pozitia la care se va afla robotul tura urmatoare
-		nextCard = (snd (takeBestCard (x,y) updatedMatr s))
-		bestCardResult = (takeBestCard (x,y) updatedMatr s)
-		updatedMatr = putHoles (x,y) (setMatrixElement (x,y) nextMatr s) cs
-		updatedPos = (newJustPosition (x,y) nextCard)
+		nextCard = (snd bestCardResult)
+		bestCardResult = (takeBestCard (x,y) currentMatr s)
+		currentMatr = putHoles (x,y) (setMatrixElement (x,y) matr s) cs
+		nextPos = (newJustPosition (x,y) nextCard)
+		
 		
