@@ -28,13 +28,23 @@ semiBordedMatrixSeq m n =
 	if ( m == 1)
 	then (minInt <| minusones(n) )|> minInt
 	else ((minInt <| minusones(n) )|> minInt) >< semiBordedMatrixSeq (m-1) n
+	
+semiBordedZeroSeq :: Int -> Int -> Data.Sequence.Seq Int
+semiBordedZeroSeq m n = 
+	if ( m == 1)
+	then (minInt <| zeros(n) )|> minInt
+	else ((minInt <| zeros(n) )|> minInt) >< semiBordedZeroSeq (m-1) n
 
 --Matrice bordata cu -00
 bordedMatrix :: Int -> Int -> Matrix
 bordedMatrix m n = ((m+2,n+2),((Data.Sequence.replicate (n+2) minInt) ><
 		   (semiBordedMatrixSeq m n) ><
 		   (Data.Sequence.replicate (n+2) minInt)))
-		   
+
+zeroBordedMatrix :: Int -> Int -> Matrix
+zeroBordedMatrix m n = ((m+2,n+2),((Data.Sequence.replicate (n+2) minInt) ><
+		   (semiBordedZeroSeq m n) ><
+		   (Data.Sequence.replicate (n+2) minInt)))		   
 --returneaza numarul de coloane/linii dintr-o matrice
 --getCol/Lin ((Int,Int), Matrix) -> Int
 getCol matrix = snd(fst(matrix))
@@ -46,8 +56,7 @@ getMatrixElement (i,j) matrix = Data.Sequence.index (snd(matrix)) ((n*i)+j)
 	where 
 		m = getLin matrix
 		n = getCol matrix
-		
- 
+	 
 --returneaza o matrice cu elementul la pozitia i j inlocuit cu a
 setMatrixElement ::  (Int,Int) ->((Int, Int), Data.Sequence.Seq Int)-> Int -> ((Int, Int), Data.Sequence.Seq Int)
 setMatrixElement (i,j) matrix a = ((m,n), Data.Sequence.update ((n*i)+j) a (snd(matrix)))
