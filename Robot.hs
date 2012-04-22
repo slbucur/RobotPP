@@ -39,6 +39,7 @@ newPosition (x, y) card
 	| otherwise = (x, y)
 	
 --da pozitia la care se va afla robotul dupa ce se va duce in directia Cardinal
+--(pentru Maybe Cardinal)
 newJustPosition:: (Int,Int)->Maybe Cardinal->(Int,Int)
 newJustPosition (x, y) card
 	| card == Just N = (x - 1, y)
@@ -47,6 +48,14 @@ newJustPosition (x, y) card
 	| card == Just W = (x, y - 1)
 	| otherwise = (x, y)
 
+posToCardinal:: (Int, Int) -> (Int,Int) -> Maybe Cardinal
+posToCardinal (x, y) (x', y')
+      | x == x' + 1 && y == y' = Just N
+      | x == x' - 1 && y == y' = Just S
+      | x == x' && y == y' + 1 = Just W
+      | x == x' && y == y' - 1 = Just E
+      | otherwise = Nothing
+      
 --face o lista cu valorile scanner-ului/ implicite pentru vecini
 makeNeighList:: (Int,Int) -> Matrix -> [Int]
 makeNeighList (x,y) matr =
@@ -96,7 +105,7 @@ takeBestCard2 neighList s = {-trace (show (neighList,s))-}
 
 
 takeBestCard:: (Int, Int) -> Matrix -> Int -> (Matrix,Maybe Cardinal)
-takeBestCard (x,y) matr s = trace (show ((x,y),matr))
+takeBestCard (x,y) matr s = {-trace (show ((x,y),matr))-}
 	(if(maxNeigh > s)
 	then (matr,toCardinal(maxNeighPoz))
 	else 
@@ -106,7 +115,8 @@ takeBestCard (x,y) matr s = trace (show ((x,y),matr))
 			if (maxNeigh > 0)
 			then trace "I'm here" (setCurrentZero, toCardinal(maxNeighPoz))
 			else 
-				trace "bfs" ((simpleMakePath (x,y) matr), Nothing))
+				trace (show (fst resultBFS)) ((snd resultBFS), (posToCardinal (x,y) (fst resultBFS)) )
+				)
 	where
 		neighList = (makeNeighList (x,y) matr)
 		maxNeigh = maximum(neighList)
@@ -114,6 +124,7 @@ takeBestCard (x,y) matr s = trace (show ((x,y),matr))
 		firstUnexploredPoz = elemIndex (-1) neighList
 		haveUnexploredPoz = (not(isNothing(firstUnexploredPoz)))
 		setCurrentZero = setMatrixElement (x,y) matr 0
+		resultBFS = (simpleMakePath (x,y) matr)
 		
 --Adauga vecinii accesibili in tabelul de parinti
 insertChildren:: [(Int,Int)] -> (Int,Int) -> Map (Int, Int) (Int,Int)
@@ -153,17 +164,17 @@ simpleBfs pos matr =
 
 --functie care face o cale de pozitii neexplorate pana la
 -- pozitia gasita in bfs
-makePath :: (Int,Int) -> Matrix -> Map (Int, Int) (Int,Int) -> Matrix
-makePath pos matr parentMap = if (currentParent == Nothing)
-	then matr
-	else (makePath (fromJust currentParent) newMatr parentMap)
+makePath :: (Int,Int) -> Matrix -> Map (Int, Int) (Int,Int) -> ((Int,Int), Matrix)
+makePath pos matr parentMap = if (parent (fromJust (parent pos))== Nothing)
+	then (pos,newMatr) 
+	else (makePath (fromJust (parent pos)) newMatr parentMap)
 	
 	where
-	currentParent = Data.Map.lookup pos parentMap
-	newMatr = (setMatrixElement pos matr (-1))
+	parent pos = Data.Map.lookup pos parentMap
+	newMatr = (setMatrixElement pos matr (1))
 	
 -- functie simplificata de makePath
-simpleMakePath :: (Int,Int) -> Matrix -> Matrix	
+simpleMakePath :: (Int,Int) -> Matrix -> ((Int,Int), Matrix)
 simpleMakePath pos matr = trace (show (fst(bfsRes)))
 	(makePath (fst(bfsRes)) matr (snd(bfsRes)))
 	where
@@ -195,7 +206,7 @@ If the cardinal direction chosen goes to a pit or an wall the robot is
 destroyed. If the new cell contains minerals they are immediately collected.
 -}
 -- perceiveAndAct :: SVal -> [Cardinal] -> a -> (Action, a)
-perceiveAndAct s cs m = trace (show (matr,(x,y)))
+perceiveAndAct s cs m = 
 	(	nextCard, 
 	{-(Just (avoidCollision E cs)),-}
 	(nextMatr,nextPos))
