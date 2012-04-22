@@ -188,7 +188,7 @@ is always placed at (0, 0)). This function should return the initial memory
 element of the robot.
 -}
 --startRobot :: Size -> a
-startRobot size = trace (show size) ( (bordedMatrix (fst(size)) (snd(size))), (1,1))-- TODO
+startRobot size = ( (bordedMatrix (fst(size)) (snd(size))), ( (1,1), [(1,1)]) )-- TODO
 
 {-
 At each time step the robot sends a light beam in all 4 cardinal directions,
@@ -206,20 +206,26 @@ If the cardinal direction chosen goes to a pit or an wall the robot is
 destroyed. If the new cell contains minerals they are immediately collected.
 -}
 -- perceiveAndAct :: SVal -> [Cardinal] -> a -> (Action, a)
-perceiveAndAct s cs m = 
-	(	nextCard, 
-	{-(Just (avoidCollision E cs)),-}
-	(nextMatr,nextPos))
+perceiveAndAct s cs m = trace (show visited)
+	(	nextCard, (nextMatr,(nextPos,newVisited))
+	)
 	where
 		matr = fst(m)
-		x = fst(snd(m))
-		y = snd(snd(m))
+		pos = fst(snd(m))
+		x = fst(pos)
+		y = snd(pos)
+		visited = snd(snd(m))
 		--matricea rezultata in urma analizei pozitiei curente
 		nextMatr = (fst bestCardResult)
-		--pozitia la care se va afla robotul tura urmatoare
+		--cardinalul la care se va duce robotul tura urmatoare
 		nextCard = (snd bestCardResult)
+		--rezultatul functiei de analiza
 		bestCardResult = (takeBestCard (x,y) currentMatr s)
+		--matricea curenta (cu gropile si senzorul puse
 		currentMatr = putHoles (x,y) (setMatrixElement (x,y) matr s) cs
+		--urmatoarea pozitie
 		nextPos = (newJustPosition (x,y) nextCard)
+		--adaugarea nodului vizitat
+		newVisited = nub (pos:visited)
 		
 		
