@@ -7,6 +7,7 @@ import Debug.Trace
 import Data.List
 import Data.Maybe
 import Data.Map
+import System.Random
 
 a = bordedMatrix 2 3
 b = setMatrixElement (1,1) (zeroBordedMatrix 10 10) (-1)
@@ -75,6 +76,22 @@ makeAccNeighPos (x,y) matr =
 		east =  (newPosition (x,y) E)
 		west =  (newPosition (x,y) W)
 		neighPos = north:south:east:west:[]
+--lista vecinilor accesibili		
+makeHolesPos:: (Int,Int) -> Matrix -> [(Int,Int)]
+makeHolesPos (x,y) matr = 
+		Data.List.filter (\ (x,y) -> 
+		((getMatrixElement (x,y) matr) == minInt) 
+		&& x > 0 && y >0 
+		&& x < lin && y < col)
+		 neighPos
+	where
+		north = (newPosition (x,y) N)
+		south = (newPosition (x,y) S)
+		east =  (newPosition (x,y) E)
+		west =  (newPosition (x,y) W)
+		neighPos = north:south:east:west:[]
+		lin = getLin matr
+		col = getCol matr
 		
 --ia un index dintr-o lista makeNeighList si il face un cardinal
 toCardinal:: Maybe Int->Maybe Cardinal
@@ -113,9 +130,9 @@ takeBestCard (x,y) matr s = {-trace (show ((x,y),matr))-}
 		then (matr, toCardinal(firstUnexploredPoz))
 		else 
 			if (maxNeigh > 0)
-			then trace "I'm here" (setCurrentZero, toCardinal(maxNeighPoz))
+			then (setCurrentZero, toCardinal(maxNeighPoz))
 			else 
-				trace (show (fst resultBFS)) ((snd resultBFS), (posToCardinal (x,y) (fst resultBFS)) )
+				((snd resultBFS), (posToCardinal (x,y) (fst resultBFS)) )
 				)
 	where
 		neighList = (makeNeighList (x,y) matr)
@@ -139,13 +156,13 @@ insertChildren children parent parentMap =
 --si returneaza tabelul parintilor si pozitia gasita
 bfs :: [(Int,Int)] -> [(Int,Int)] -> Map (Int, Int) (Int,Int) -> Matrix 
 	-> ((Int,Int),  Map (Int, Int) (Int,Int))
-bfs posList visited parentMap matr = {-trace (show (currentUnvisitedNegih,visited))-}
+bfs posList visited parentMap matr = 
 	(if ((length posList) == 0)
 		then (currentPos, parentMap)
 		else 
 			if  (getMatrixElement currentPos matr) == (-1)
 			then (currentPos, parentMap)
-			else {-((0,0), parentMap)-}
+			else 
 			 (bfs ((tail posList) ++ currentUnvisitedNegih)
 				  (nub (currentPos : visited))
 				  newParentMap matr)
@@ -162,7 +179,7 @@ simpleBfs :: (Int,Int) -> Matrix
 simpleBfs pos matr = 
 			bfs [pos] [] Data.Map.empty matr
 
---functie care face o cale de pozitii neexplorate pana la
+--functie care face o cale de pozitii valoroase pana la
 -- pozitia gasita in bfs
 makePath :: (Int,Int) -> Matrix -> Map (Int, Int) (Int,Int) -> ((Int,Int), Matrix)
 makePath pos matr parentMap = if (parent (fromJust (parent pos))== Nothing)
@@ -175,7 +192,7 @@ makePath pos matr parentMap = if (parent (fromJust (parent pos))== Nothing)
 	
 -- functie simplificata de makePath
 simpleMakePath :: (Int,Int) -> Matrix -> ((Int,Int), Matrix)
-simpleMakePath pos matr = trace (show (fst(bfsRes)))
+simpleMakePath pos matr = 
 	(makePath (fst(bfsRes)) matr (snd(bfsRes)))
 	where
 		bfsRes = simpleBfs pos matr
@@ -206,9 +223,12 @@ If the cardinal direction chosen goes to a pit or an wall the robot is
 destroyed. If the new cell contains minerals they are immediately collected.
 -}
 -- perceiveAndAct :: SVal -> [Cardinal] -> a -> (Action, a)
-perceiveAndAct s cs m = trace (show visited)
-	(	nextCard, (nextMatr,(nextPos,newVisited))
-	)
+perceiveAndAct s cs m = 
+		(if  (length visited) > ((getActualSize matr) - 4)
+		then trace funny (Nothing, m)
+		else (nextCard, (nextMatr,(nextPos,newVisited)) )
+		)
+	
 	where
 		matr = fst(m)
 		pos = fst(snd(m))
@@ -226,6 +246,16 @@ perceiveAndAct s cs m = trace (show visited)
 		--urmatoarea pozitie
 		nextPos = (newJustPosition (x,y) nextCard)
 		--adaugarea nodului vizitat
-		newVisited = nub (pos:visited)
+		newVisited = nub ((pos:visited) ++ (makeHolesPos pos matr))
+		--doar trebuia sa pun ceva cand se opreste, nu?
+		funny = funnyQuotes !! (mod (x) 6)
+		r = randomIO :: IO Int
 		
 		
+funnyQuotes = [ "I'm lazy and i'm not movin",
+				"No way! That was the whole map ???",
+				"It's late, i should go home.. Wait, how do i get back?",
+				"I can't do this for a living",
+				"I gathered all the cristals.Now what?",
+				"I R Confused"]
+				

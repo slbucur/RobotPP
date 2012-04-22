@@ -44,11 +44,16 @@ bordedMatrix m n = ((m+2,n+2),((Data.Sequence.replicate (n+2) minInt) ><
 zeroBordedMatrix :: Int -> Int -> Matrix
 zeroBordedMatrix m n = ((m+2,n+2),((Data.Sequence.replicate (n+2) minInt) ><
 		   (semiBordedZeroSeq m n) ><
-		   (Data.Sequence.replicate (n+2) minInt)))		   
+		   (Data.Sequence.replicate (n+2) minInt)))
+		   		   
 --returneaza numarul de coloane/linii dintr-o matrice
 --getCol/Lin ((Int,Int), Matrix) -> Int
 getCol matrix = snd(fst(matrix))
 getLin matrix = fst(fst(matrix))
+
+--returneaza dimensiunea matricei bordata sau nebordata
+getSize matrix = (getLin matrix) * (getCol matrix)
+getActualSize matrix = ((getLin matrix) - 2) * ((getCol matrix) - 2)
 
 --returneaza elementul unei matrice cu n coloane aflat la pozitia i j
 getMatrixElement :: (Int, Int) -> Matrix -> Int
